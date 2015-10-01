@@ -5,20 +5,19 @@ from plugin_manager.plugins.hal.combat import Combat
 
 
 class Plugin:
-    def __init__(self, send_command):
+    def __init__(self):
         print("AutoCombat: init")
-        self.send_command = send_command
         self.in_combat = False
         self.free = True
         self.action = Action.nothing
         self.queue = []
-        self.combat = Combat(send_command, self.hal_print, self.add_action, self.remove_action, self.queue, self.free,
+        self.combat = Combat( self.hal_print, self.add_action, self.remove_action, self.queue, self.free,
                              self.action)
         self.combat_enabled = tk.BooleanVar()
 
-    def process(self, line):
+    def process(self, line, send_command):
         if self.in_combat and self.combat_enabled.get():
-            self.combat.handle_combat_line(line)
+            self.combat.handle_combat_line(line, send_command)
         elif "You are no longer busy" in line:
             self.hal_print("Not Busy")
             self.free = True

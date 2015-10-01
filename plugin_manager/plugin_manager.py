@@ -8,11 +8,11 @@ class PluginManager():
     path = "plugin_manager/plugins"
     plugins = {}
 
-    def __init__(self, send_command):
-        self.find_plugins(self.path, send_command)
+    def __init__(self):
+        self.find_plugins(self.path, )
         print(self.plugins)
 
-    def find_plugins(self, current_path, send_command):
+    def find_plugins(self, current_path):
         sys.path.insert(0, current_path)
         for root, dirs, files in os.walk(current_path, topdown=True):
             for name in files:
@@ -22,16 +22,16 @@ class PluginManager():
                     # if ext == '.py':
                     try:
                         mod = __import__(name)
-                        self.plugins[name] = mod.Plugin(send_command)
+                        self.plugins[name] = mod.Plugin()
                     except Exception as e:
                         print(e.__doc__)
             for name in dirs:
-                self.find_plugins(current_path + "/" + name, send_command)
+                self.find_plugins(current_path + "/" + name)
         sys.path.pop(0)
 
-    def pre_draw_plugins(self, line, tags):
+    def pre_draw_plugins(self, line, tags, send_command):
         for plugin in self.plugins.values():
-            plugin.process(line)
+            plugin.process(line, send_command)
 
     def post_draw_plugin(self, line, tags):
         pass

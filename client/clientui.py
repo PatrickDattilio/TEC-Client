@@ -152,14 +152,14 @@ class ClientUI(tk.Frame):
                 pprint(skoot)
 
     def draw_output(self, text, tags=None):
-        text_handled = self.plugin_manager.pre_draw_plugins(text,tags)
+        text_handled = self.plugin_manager.pre_draw_plugins(text, tags, self.send_command_with_preferences)
         if not text_handled:
             self.output_panel.configure(state="normal")
             # scroll_position = self.output_panel.scrollbar.get()
             self.output_panel.insert(tk.END, text, tags)
             self.output_panel.configure(state="disabled")
             self.scroll_output()
-        self.plugin_manager.post_draw_plugin(text,tags)
+        self.plugin_manager.post_draw_plugin(text, tags)
 
         # If we're logging the session, we need to handle that
         if self.client.config['logging'].getboolean('log_session'):
@@ -328,6 +328,9 @@ class ClientUI(tk.Frame):
         text = user_input.widget.get()
         self.input_buffer.append(user_input.widget.get())
         user_input.widget.delete(0, tk.END)
+        self.send_command_with_preferences(text)
+
+    def send_command_with_preferences(self, text):
         if not self.interrupt_input:
             self.send_command(text)
         else:

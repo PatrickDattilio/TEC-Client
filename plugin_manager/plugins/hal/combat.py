@@ -12,13 +12,12 @@ class HuntingGround(IntEnum):
 
 
 class Combat:
-    def __init__(self, send_command, hal_print, add_action, remove_action, queue, free, action):
+    def __init__(self,  hal_print, add_action, remove_action, queue, free, action):
         self.rotation = [['zzh', 'zxh', 'zch', 'zvh', 'zbh', 'znh', 'zmh', 'za', 'zsh'],
                          ['zz', 'zx', 'zc', 'zv', 'zb', 'zn', 'za', 'zm', 'zs', 'zd', 'zd', 'zm']]
         self.retreat = False
         self.hal_print = hal_print
         self.hunting_ground = HuntingGround.Sewers
-        self.send_command = send_command
         self.add_action = add_action
         self.remove_action = remove_action
         self.queue = queue
@@ -70,7 +69,8 @@ class Combat:
                 self.perform_action()
 
     # We are in combat
-    def handle_combat_line(self, line):
+    def handle_combat_line(self, line, send_command):
+        self.send_command = send_command
         me = True
         if "You are no longer busy." in line:
             self.hal_print("Not Busy")

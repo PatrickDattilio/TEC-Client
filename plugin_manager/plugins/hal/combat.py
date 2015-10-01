@@ -30,6 +30,9 @@ class Combat:
         self.send_command("get tin dagg")
         time.sleep(random.randrange(1234, 2512) / 1000)
         self.send_command("wie tin dagg")
+        self.free = True
+        time.sleep(random.randrange(1593, 2849) / 1000)
+        self.perform_action()
 
     def handle_recover(self, recover_now):
         self.add_action(Action.recover)

@@ -47,7 +47,7 @@ class Plugin:
         self.draw_text(label_frame)
 
     def draw_toggles(self, label_frame):
-        combat_toggle = tk.Checkbutton(label_frame, twext="Combat", variable=self.combat_enabled)
+        combat_toggle = tk.Checkbutton(label_frame, text="Combat", variable=self.combat_enabled)
         combat_toggle.grid(row=0, column=0, sticky=tk.N, command=self.combat.perform_action())
 
     def draw_text(self, label_frame):

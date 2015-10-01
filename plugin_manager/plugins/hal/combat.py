@@ -3,7 +3,7 @@ import random
 import time
 
 import re
-from plugin_manager.plugins.hal.Action import Action
+from plugin_manager.plugins.hal.action import Action
 
 
 class HuntingGround(IntEnum):

@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from plugin_manager.plugins.hal.Action import Action
+from plugin_manager.plugins.hal.action import Action
 from plugin_manager.plugins.hal.combat import Combat
 
 
@@ -30,7 +30,6 @@ class Plugin:
             self.hal_print("Retreating")
             self.add_action(Action.retreat)
 
-
     def add_action(self, action):
         if action not in self.queue:
             self.queue.append(action)
@@ -48,8 +47,8 @@ class Plugin:
         self.draw_text(label_frame)
 
     def draw_toggles(self, label_frame):
-        combat_toggle = tk.Checkbutton(label_frame, text="Combat", variable=self.combat_enabled)
-        combat_toggle.grid(row=0, column=0, sticky=tk.N)
+        combat_toggle = tk.Checkbutton(label_frame, twext="Combat", variable=self.combat_enabled)
+        combat_toggle.grid(row=0, column=0, sticky=tk.N, command=self.combat.perform_action())
 
     def draw_text(self, label_frame):
         scrollbar = tk.Scrollbar(label_frame)
@@ -65,7 +64,6 @@ class Plugin:
         self.hal_output.scrollbar = scrollbar
         self.hal_output.grid(row=1, column=0, sticky=tk.N + tk.W)
 
-
     def scroll_output(self):
         self.hal_output.see(tk.END)
 
@@ -74,3 +72,7 @@ class Plugin:
         self.hal_output.insert(tk.END, line + "\n", None)
         self.hal_output.configure(state="disabled")
         self.scroll_output()
+
+    def perform_action(self):
+        if self.in_combat and self.combat_enabled.get():
+            self.combat.perform_action()

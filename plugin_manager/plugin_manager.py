@@ -33,6 +33,9 @@ class PluginManager():
         for plugin in self.plugins.values():
             plugin.process(line, send_command)
 
+        #Maybe we do something like AND the result of all the process calls? if any of them return that they handled it and we should not draw
+        return False
+
     def post_draw_plugin(self, line, tags):
         pass
 

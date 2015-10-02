@@ -1,23 +1,20 @@
-from enum import IntEnum
+import os
 import random
 import time
+import json
 
 import re
 from plugin_manager.plugins.hal.action import Action
 
-
-class HuntingGround(IntEnum):
-    Island = 0
-    Sewers = 1
-
-
 class Combat:
-    def __init__(self,  hal_print, add_action, remove_action, queue, free, action):
-        self.rotation = [['zzh', 'zxh', 'zch', 'zvh', 'zbh', 'znh', 'zmh', 'za', 'zsh'],
-                         ['zz', 'zx', 'zc', 'zv', 'zb', 'zn', 'za', 'zm', 'zs', 'zd', 'zd', 'zm']]
+    def __init__(self, hal_print, add_action, remove_action, queue, free, action):
+        with open(os.path.dirname(__file__)+'/settings.json', 'r') as f:
+            self.settings = json.load(f)
+
+        self.rotation = self.settings['rotation']
+        self.weapon = self.settings['weapon']
         self.retreat = False
         self.hal_print = hal_print
-        self.hunting_ground = HuntingGround.Sewers
         self.add_action = add_action
         self.remove_action = remove_action
         self.queue = queue
@@ -26,9 +23,9 @@ class Combat:
         self.rollPattern = re.compile('Success: (\d+), Roll: (\d+)')
 
     def recover(self):
-        self.send_command("get tin dagg")
+        self.send_command("get " + self.weapon)
         time.sleep(random.randrange(1234, 2512) / 1000)
-        self.send_command("wie tin dagg")
+        self.send_command("wie " + self.weapon)
         self.free = True
         time.sleep(random.randrange(1593, 2849) / 1000)
         self.perform_action()
@@ -39,8 +36,8 @@ class Combat:
             self.perform_action()
 
     def attack(self):
-        index = random.randrange(0, len(self.rotation[self.hunting_ground]))
-        cmd = self.rotation[self.hunting_ground][index]
+        index = random.randrange(0, len(self.rotation))
+        cmd = self.rotation[index]
         self.send_command(cmd)
         self.add_action(Action.attack)
 
@@ -105,9 +102,13 @@ class Combat:
                     self.hal_print("Free, attacking")
                     self.perform_action()
             elif "You slit" in line:
+
                 self.hal_print("Killed")
                 self.remove_action(Action.kill)
                 self.in_combat = False
             roll = self.rollPattern.search(line)
             if me:
                 self.action_status = int(roll.group(1)) < int(roll.group(2))
+
+    def send_cmd(self, cmd):
+        self.send_cmd(cmd + "\n")

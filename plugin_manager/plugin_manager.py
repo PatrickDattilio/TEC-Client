@@ -17,14 +17,12 @@ class PluginManager():
         for root, dirs, files in os.walk(current_path, topdown=True):
             for name in files:
                 if name.endswith(".py"):
-                    print(os.path.join(root, name))
                     name = name.strip(".py")
-                    # if ext == '.py':
                     try:
                         mod = __import__(name)
                         self.plugins[name] = mod.Plugin()
                     except Exception as e:
-                        print(e.__doc__)
+                        pass
             for name in dirs:
                 self.find_plugins(current_path + "/" + name)
         sys.path.pop(0)

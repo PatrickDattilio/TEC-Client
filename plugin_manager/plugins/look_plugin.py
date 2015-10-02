@@ -1,9 +1,8 @@
 class Plugin:
-    def __init__(self, send_command):
+    def __init__(self):
         print("Look Plugin: init")
-        self.send_command = send_command
 
-    def process(self, line):
+    def process(self, line, send_command):
         if "look" in line:
             print("You looked!")
 

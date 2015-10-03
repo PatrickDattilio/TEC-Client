@@ -19,7 +19,6 @@ class Plugin:
         if self.in_combat and self.combat_enabled.get():
             self.combat.handle_combat_line(line, send_command)
         elif "You are no longer busy" in line:
-            self.hal_print("Not Busy")
             self.free = True
             # self.perform_action()
         elif ("] A" in line or "] An" in line) and "You retrieve the line" not in line:
@@ -47,7 +46,7 @@ class Plugin:
 
     def draw_toggles(self, label_frame):
         combat_toggle = tk.Checkbutton(label_frame, text="Combat", variable=self.combat_enabled,
-                                       command=self.combat.perform_action())
+                                       command=self.combat.perform_action)
         combat_toggle.grid(row=0, column=0, sticky=tk.N)
 
     def draw_text(self, label_frame):

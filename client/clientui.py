@@ -23,7 +23,7 @@ class ClientUI(tk.Frame):
         self.input_buffer = []
         self.input_cursor = 0
         self.list_depth = 0
-        self.MAP_OFFSET = 60;
+        self.MAP_OFFSET = 60
 
         menu_bar = tk.Menu(master)
         self.menu_file = tk.Menu(menu_bar, tearoff=0)
@@ -281,7 +281,7 @@ class ClientUI(tk.Frame):
                 self.map_area.create_line(coords[2][0], coords[2][1], coords[2][2], coords[2][3], fill="black")
 
     # Given an x,y coordinate, compute the black lines and white lines which define an exit in the given direction.
-    def compute_exit_line(x, y, direction):
+    def compute_exit_line(self, x, y, direction):
         if direction == "ver":
             return [[x - 2, y + 5, x - 2, y - 5],
                     [x, y + 5, x, y - 5],
@@ -353,7 +353,7 @@ class ClientUI(tk.Frame):
 
     def create_plugin_menu(self, menu_bar):
         size = len(menu_bar.children)
-        if size >1:
+        if size > 1:
             menu_bar.delete("Plugins")
         self.menu_plugins = tk.Menu(menu_bar, tearoff=0)
         self.plugin_checkboxes = dict()

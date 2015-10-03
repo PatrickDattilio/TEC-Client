@@ -47,5 +47,5 @@ class PluginManager():
     def get_plugins(self):
         return self.plugins
 
-    def toggle_plugin(self, name, isEnabled):
-        self.plugin_status[name] = isEnabled
+    def toggle_plugin(self, name, is_enabled):
+        self.plugin_status[name] = is_enabled

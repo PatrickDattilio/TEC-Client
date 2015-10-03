@@ -44,9 +44,9 @@ class Combat:
         self.send_cmd(cmd)
         self.add_action(Action.attack)
 
-    def retreat(self, isRetreating):
-        retreat = isRetreating
-        pass
+    # def retreat(self, is_retreating):
+    #     retreat = is_retreating
+    #     pass
 
     def perform_action(self):
         if self.free and len(self.queue) > 0:
@@ -72,7 +72,6 @@ class Combat:
         self.send_command = send_command
         me = True
         if "You are no longer busy." in line:
-            self.hal_print("Not Busy")
             self.free = True
             self.perform_action()
         elif "expires." in line:
@@ -80,7 +79,6 @@ class Combat:
             self.hal_print("Dead")
             self.in_combat = False
         elif "falls unconscious" in line:
-            self.hal_print("Unconscious")
             self.remove_action(Action.attack)
             self.add_action(Action.kill)
             if self.free:
@@ -106,7 +104,7 @@ class Combat:
             elif "You slit" in line:
                 target = self.killPattern.search(line)
                 if target:
-                    self.hal_print(str(datetime.datetime.now()) + " Killed " + target.group(1))
+                    self.hal_print(str(datetime.datetime.now()[:-7]) + " Killed " + target.group(1))
                 self.remove_action(Action.kill)
                 self.in_combat = False
             roll = self.rollPattern.search(line)

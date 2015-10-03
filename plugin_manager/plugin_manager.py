@@ -6,11 +6,11 @@ __author__ = 'pat'
 
 class PluginManager():
     path = "plugin_manager/plugins"
-    plugins = {}
 
     def __init__(self):
-        self.find_plugins(self.path, )
-        print(self.plugins)
+        self.plugins = {}
+        self.plugin_status = {}
+        self.find_plugins(self.path)
 
     def find_plugins(self, current_path):
         sys.path.insert(0, current_path)
@@ -21,6 +21,7 @@ class PluginManager():
                     try:
                         mod = __import__(name)
                         self.plugins[name] = mod.Plugin()
+                        self.plugin_status[name] = True
                     except Exception as e:
                         pass
             for name in dirs:
@@ -28,15 +29,23 @@ class PluginManager():
         sys.path.pop(0)
 
     def pre_draw_plugins(self, line, tags, send_command):
-        for plugin in self.plugins.values():
-            plugin.process(line, send_command)
+        for key, plugin in self.plugins.items():
+            if self.plugin_status[key]:
+                plugin.process(line, send_command)
 
-        #Maybe we do something like AND the result of all the process calls? if any of them return that they handled it and we should not draw
+        # Maybe we do something like AND the result of all the process calls? if any of them return that they handled it and we should not draw
         return False
 
     def post_draw_plugin(self, line, tags):
         pass
 
     def create_plugin_area(self, plugin_area):
-        for plugin in self.plugins.values():
-            plugin.draw(plugin_area)
+        for key, plugin in self.plugins.items():
+            if self.plugin_status[key]:
+                plugin.draw(plugin_area)
+
+    def get_plugins(self):
+        return self.plugins
+
+    def toggle_plugin(self, name, isEnabled):
+        self.plugin_status[name] = isEnabled

@@ -11,7 +11,7 @@ class Plugin:
         self.free = True
         self.action = Action.nothing
         self.queue = []
-        self.combat = Combat( self.hal_print, self.add_action, self.remove_action, self.queue, self.free,
+        self.combat = Combat(self.hal_print, self.add_action, self.remove_action, self.queue, self.free,
                              self.action)
         self.combat_enabled = tk.BooleanVar()
 
@@ -46,8 +46,9 @@ class Plugin:
         self.draw_text(label_frame)
 
     def draw_toggles(self, label_frame):
-        combat_toggle = tk.Checkbutton(label_frame, text="Combat", variable=self.combat_enabled)
-        combat_toggle.grid(row=0, column=0, sticky=tk.N, command=self.combat.perform_action())
+        combat_toggle = tk.Checkbutton(label_frame, text="Combat", variable=self.combat_enabled,
+                                       command=self.combat.perform_action())
+        combat_toggle.grid(row=0, column=0, sticky=tk.N)
 
     def draw_text(self, label_frame):
         scrollbar = tk.Scrollbar(label_frame)

@@ -31,6 +31,9 @@ class ClientUI(tk.Frame):
         self.menu_file.add_command(label="Disconnect", command=self.client.shutdown)
         self.menu_file.add_command(label="Quit", command=self.client.quit)
         menu_bar.add_cascade(label="Client", menu=self.menu_file)
+
+        self.create_plugin_menu(menu_bar)
+
         self.master.config(menu=menu_bar)
 
         self.master.grid()
@@ -55,7 +58,8 @@ class ClientUI(tk.Frame):
         self.output_panel.tag_configure("center", justify=tk.CENTER)
 
     def parse_output(self, line):
-        # Capture SKOOTs
+        # Capture SKOOTs    @staticmethod
+
         if line.find('SKOOT') != -1:
             self.parse_skoot(line)
         else:
@@ -155,7 +159,10 @@ class ClientUI(tk.Frame):
         self.plugin_manager.pre_draw_plugins(text, tags, self.send_command_with_preferences)
         self.output_panel.configure(state="normal")
         # scroll_position = self.output_panel.scrollbar.get()
-        self.output_panel.insert(tk.END, text, tags)
+        try:
+            self.output_panel.insert(tk.END, text, tags)
+        except Exception as e:
+            print(e)
         self.output_panel.configure(state="disabled")
         self.scroll_output()
         self.plugin_manager.post_draw_plugin(text, tags)
@@ -204,10 +211,8 @@ class ClientUI(tk.Frame):
         self.create_compass_area(side_bar)
         self.create_map_area(side_bar)
 
-        # This is the side bar configuration.
-        plugin_bar = tk.Frame(name="plugin_bar")
-        plugin_bar.grid(row=0, column=4, rowspan=2, sticky=tk.S + tk.N)
-        self.plugin_manager.create_plugin_area(plugin_bar)
+        # This is the area for plugins
+        self.create_plugin_area()
 
     def create_status_area(self, side_bar):
         self.status_area = tk.Canvas(side_bar, name="status_area", width=80, height=105, bg='black')
@@ -275,7 +280,6 @@ class ClientUI(tk.Frame):
                 self.map_area.create_line(coords[0][0], coords[0][1], coords[0][2], coords[0][3], fill="black")
                 self.map_area.create_line(coords[2][0], coords[2][1], coords[2][2], coords[2][3], fill="black")
 
-    @staticmethod
     # Given an x,y coordinate, compute the black lines and white lines which define an exit in the given direction.
     def compute_exit_line(x, y, direction):
         if direction == "ver":
@@ -306,6 +310,11 @@ class ClientUI(tk.Frame):
     def create_map_area(self, side_bar):
         self.map_area = tk.Canvas(side_bar, name="map", width=120, height=120, bg='black')
         self.map_area.pack(side='bottom')
+
+    def create_plugin_area(self):
+        plugin_bar = tk.Frame(name="plugin_bar")
+        plugin_bar.grid(row=0, column=4, rowspan=1, sticky=tk.S + tk.N)
+        self.plugin_manager.create_plugin_area(plugin_bar)
 
     def traverse_up_input_buffer(self, event):
         if self.input_cursor < self.input_buffer.__len__():
@@ -342,4 +351,22 @@ class ClientUI(tk.Frame):
         prefs = Preferences(self.client)
         prefs.grid()
 
+    def create_plugin_menu(self, menu_bar):
+        size = len(menu_bar.children)
+        if size >1:
+            menu_bar.delete("Plugins")
+        self.menu_plugins = tk.Menu(menu_bar, tearoff=0)
+        self.plugin_checkboxes = dict()
+        for plugin in self.plugin_manager.plugins:
+            self.plugin_checkboxes[plugin] = tk.BooleanVar(value=self.plugin_manager.plugin_status[plugin])
+            self.menu_plugins.add_checkbutton(label=plugin, var=self.plugin_checkboxes[plugin],
+                                              command=lambda name=plugin: self.toggle_plugin(name,
+                                                                                             self.plugin_checkboxes[
+                                                                                                 name].get()))
+        self.menu_plugins.add_command(label="Refresh", command=lambda mb=menu_bar: self.create_plugin_menu(menu_bar))
 
+        menu_bar.add_cascade(label="Plugins", menu=self.menu_plugins)
+
+    def toggle_plugin(self, name, toggle_on):
+        self.plugin_manager.toggle_plugin(name, toggle_on)
+        self.create_plugin_area()

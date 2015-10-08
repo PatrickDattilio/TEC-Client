@@ -104,7 +104,7 @@ class Combat:
             elif "You slit" in line:
                 target = self.killPattern.search(line)
                 if target:
-                    self.hal_print(str(datetime.datetime.now()[:-7]) + " Killed " + target.group(1))
+                    self.hal_print(str(datetime.datetime.now())[:-7] + " Killed " + target.group(1))
                 self.remove_action(Action.kill)
                 self.in_combat = False
             roll = self.rollPattern.search(line)

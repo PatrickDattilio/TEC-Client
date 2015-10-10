@@ -1,3 +1,4 @@
+__author__ = 'ToothlessRebel'
 from tkinter.font import Font
 import tkinter as tk  # @todo Import only what's needed.
 import re
@@ -8,7 +9,6 @@ from pprint import pprint
 
 from preferences.preferences import Preferences
 
-__author__ = 'ToothlessRebel'
 
 class ClientUI(tk.Frame):
     def __init__(self, master, client, queue, send_command, plugin_manager):
@@ -45,6 +45,10 @@ class ClientUI(tk.Frame):
 
         # pprint(vars(master))
         self.side_bar = master.children['side_bar']
+        self.output_panel = master.children['output']
+        self.output_panel.configure(state="normal")
+        self.output_panel.bind('<Key>',lambda e: 'break')
+
         self.output_panel = master.children['output_frame'].children['output']
         self.input = master.children['input']
 
@@ -59,7 +63,8 @@ class ClientUI(tk.Frame):
         self.output_panel.tag_configure("center", justify=tk.CENTER)
 
     def parse_output(self, line):
-        # Capture SKOOTs
+        # Capture SKOOTs    @staticmethod
+
         if line.find('SKOOT') != -1:
             self.parse_skoot(line)
         else:
@@ -155,14 +160,12 @@ class ClientUI(tk.Frame):
                 pprint(skoot)
 
     def draw_output(self, text, tags=None):
-        self.plugin_manager.pre_process(text, tags)
+        self.plugin_manager.pre_draw_plugins(text, tags, self.send_command_with_preferences)
         self.output_panel.configure(state="normal")
         # scroll_position = self.output_panel.scrollbar.get()
         try:
             self.output_panel.insert(tk.END, text, tags)
-            self.output_panel.configure(state="disabled")
-            self.scroll_output()
-              except Exception as e:
+        except Exception as e:
             print(e)
         self.output_panel.configure(state="disabled")
         self.scroll_output()
@@ -318,10 +321,15 @@ class ClientUI(tk.Frame):
     def update_map(self, map_elements):
         self.map_area.delete("all")
         for position in map_elements:
-            size = int(position[2])
-            x = int(position[0]) + self.MAP_OFFSET
-            y = int(position[1]) + self.MAP_OFFSET + size
-            self.map_area.create_rectangle(x, y, x + size, y - size, fill=position[3])
+            if len(position) > 4:
+                size = int(position[2])
+                x = int(position[0]) + self.MAP_OFFSET
+                y = int(position[1]) + self.MAP_OFFSET + size
+                self.map_area.create_rectangle(x, y, x + size, y - size, fill=position[3])
+            else:
+                print("Length: "+ str(len(position)))
+                print("Bad map position: " + str(position))
+                print("In the scoot: " + str(map_elements))
 
     def create_map_area(self, side_bar):
         self.map_area = tk.Canvas(side_bar, name="map", width=120, height=120, bg='black')

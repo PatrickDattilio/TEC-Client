@@ -1,8 +1,10 @@
 __author__ = 'ToothlessRebel'
 from tkinter import Tk
-from client import Client
-from pkg_resources import resource_filename
 import faulthandler
+
+from pkg_resources import resource_filename
+
+from client import Client
 
 faulthandler.enable(open('crash_log.txt', 'w'))
 root = Tk()

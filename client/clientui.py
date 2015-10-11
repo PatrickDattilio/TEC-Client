@@ -18,6 +18,7 @@ class ClientUI(tk.Frame):
         self.send_command = send_command
         self.master = master
         self.plugin_manager = plugin_manager
+        self.plugin_manager.setup(self.send_command_with_prefs, self.echo)
         self.interrupt_input = False
         self.interrupt_buffer = deque()
         self.input_buffer = []
@@ -44,9 +45,9 @@ class ClientUI(tk.Frame):
 
         self.side_bar = master.children['side_bar']
         self.output_panel = master.children['output_frame'].children['output']
-        self.output_panel = master.children['output']
         self.output_panel.configure(state="normal")
         self.output_panel.bind('<Key>',lambda e: 'break')
+        self.input = master.children['input']
 
         self.char_width = Font(self.output_panel, self.output_panel.cget("font")).measure('0')
         self.line_length = self.calc_line_length(self.output_panel.cget("width"))
@@ -114,7 +115,6 @@ class ClientUI(tk.Frame):
                         tags.append('bold')
                     elif re.match(r'ul', segment):
                         self.list_depth += 1
-                        # pprint('List depth now raised to: ' + str(self.list_depth))
                         segment.replace('ul', '')
                         if re.match(r'li', segment):
                             segment = segment.replace('li', self.draw_tabs() + "* ")
@@ -159,7 +159,7 @@ class ClientUI(tk.Frame):
         self.plugin_manager.pre_draw_plugins(text, tags, self.send_command_with_preferences)
         self.output_panel.insert(tk.END, text, tags)
         self.scroll_output()
-        self.plugin_manager.post_draw_plugin(text, tags)
+        self.plugin_manager.post_process(text, tags)
 
         # If we're logging the session, we need to handle that
         if self.client.config['logging'].getboolean('log_session'):
@@ -199,18 +199,15 @@ class ClientUI(tk.Frame):
         game_pane.add(output_frame)
         output.bind("<Configure>", self.set_line_length)
 
-        # input_area = tk.Entry(self.master, name="input")
         input_area = tk.Text(
             self.master,
             name="input",
             height=1
         )
         input_area.bind("<Return>", self.parse_input)
-        input_area.bind("<Enter>", self.parse_input)
         input_area.bind("<Up>", self.traverse_up_input_buffer)
         input_area.bind("<Down>", self.traverse_down_input_buffer)
         input_area.focus()
-        # input_area.grid(row=1, sticky=tk.W + tk.E)
         game_pane.add(input_area)
 
         # This is the side bar configuration.
@@ -250,6 +247,8 @@ class ClientUI(tk.Frame):
                 self.status_area.coords(self.status['encumbrance'], 35, 105 - int(status_update[1]), 45, 105)
             elif status_update[0] == 'Satiation':
                 self.status_area.coords(self.status['satiation'], 50, 105 - int(status_update[1]), 60, 105)
+
+            self.plugin_manager.status_update(status_update[0], status_update[1])
 
     def create_compass_area(self, side_bar):
         self.compass_area = tk.Canvas(side_bar, name="compass", width=78, height=78, bg='black')
@@ -291,7 +290,7 @@ class ClientUI(tk.Frame):
 
     @staticmethod
     # Given an x,y coordinate, compute the black lines and white lines which define an exit in the given direction.
-    def compute_exit_line(self, x, y, direction):
+    def compute_exit_line(x, y, direction):
         if direction == "ver":
             return [[x - 1, y + 5, x - 1, y - 5],
                     [x, y + 5, x, y - 5],
@@ -351,15 +350,22 @@ class ClientUI(tk.Frame):
         text = user_input.widget.get('1.0', 'end-1c')
         self.input_buffer.append(user_input.widget.get('1.0', 'end-1c'))
         user_input.widget.delete('1.0', tk.END)
+        self.send_command_with_prefs(text)
+        return 'break'
+
+    def send_command_with_prefs(self, text):
         if not self.interrupt_input:
             self.send_command(text)
         else:
             self.interrupt_buffer.append(text)
-        if self.client.config['UI'].getboolean('echo_input'):
-            self.draw_output(("\n" + text), 'italic')
-            self.scroll_output()
 
-        return 'break'
+        if self.client.config['UI'].getboolean('echo_input'):
+            self.echo(text)
+
+    def echo(self, text):
+        self.draw_output(("\n" + text), 'italic')
+        self.scroll_output()
+
 
     def show_preferences(self):
         prefs = Preferences(self.client)
@@ -372,7 +378,7 @@ class ClientUI(tk.Frame):
         self.menu_plugins = tk.Menu(menu_bar, tearoff=0)
         self.plugin_checkboxes = dict()
         for plugin in self.plugin_manager.plugins:
-            self.plugin_checkboxes[plugin] = tk.BooleanVar(value=self.plugin_manager.plugin_status[plugin])
+            self.plugin_checkboxes[plugin] = tk.BooleanVar(value=self.plugin_manager.plugin_enabled[plugin])
             self.menu_plugins.add_checkbutton(label=plugin, var=self.plugin_checkboxes[plugin],
                                               command=lambda name=plugin: self.toggle_plugin(name,
                                                                                              self.plugin_checkboxes[

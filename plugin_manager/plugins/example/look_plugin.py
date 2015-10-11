@@ -1,8 +1,13 @@
 class Plugin:
-
     def __init__(self):
-        print("look plugin init")
+        pass
 
-    def post_process(self, line, send_command, echo):
+    def set_send_command(self, send_command):
+        self.send_command = send_command
+
+    def set_echo(self, echo):
+        self.echo = echo
+
+    def post_process(self, line):
         if line.strip() == "look":
-            echo("You looked!")
+            self.echo("You looked!")

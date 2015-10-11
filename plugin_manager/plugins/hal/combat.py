@@ -25,6 +25,12 @@ class Combat:
         self.rollPattern = re.compile('Success: (\d+), Roll: (\d+)')
         self.killPattern = re.compile('You slit (.*)\'s')
 
+    def set_send_command(self, send_command):
+        self.send_command = send_command
+
+    def set_echo(self, echo):
+        self.echo = echo
+
     def recover(self):
         self.send_cmd("get " + self.weapon)
         time.sleep(random.randrange(1234, 2512) / 1000)
@@ -68,8 +74,7 @@ class Combat:
                 self.perform_action()
 
     # We are in combat
-    def handle_combat_line(self, line, send_command):
-        self.send_command = send_command
+    def handle_combat_line(self, line):
         me = True
         if "You are no longer busy." in line:
             self.free = True

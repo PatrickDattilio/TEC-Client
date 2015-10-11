@@ -1,3 +1,5 @@
+from plugin_manager.plugin_manager import PluginManager
+
 __author__ = 'ToothlessRebel'
 from tkinter.font import Font
 import tkinter as tk  # @todo Import only what's needed.
@@ -11,14 +13,13 @@ from preferences.preferences import Preferences
 
 
 class ClientUI(tk.Frame):
-    def __init__(self, master, client, queue, send_command, plugin_manager):
+    def __init__(self, master, client, queue, send_command):
         super(ClientUI, self).__init__()
         self.client = client
         self.queue = queue
         self.send_command = send_command
         self.master = master
-        self.plugin_manager = plugin_manager
-        self.plugin_manager.setup(self.send_command_with_prefs, self.echo)
+        self.plugin_manager = PluginManager(self.send_command_with_prefs, self.echo)
         self.interrupt_input = False
         self.interrupt_buffer = deque()
         self.input_buffer = []
@@ -156,7 +157,7 @@ class ClientUI(tk.Frame):
                 pprint(skoot)
 
     def draw_output(self, text, tags=None):
-        self.plugin_manager.pre_draw_plugins(text, tags, self.send_command_with_preferences)
+        self.plugin_manager.pre_process(text, tags)
         self.output_panel.insert(tk.END, text, tags)
         self.scroll_output()
         self.plugin_manager.post_process(text, tags)
@@ -365,7 +366,6 @@ class ClientUI(tk.Frame):
     def echo(self, text):
         self.draw_output(("\n" + text), 'italic')
         self.scroll_output()
-
 
     def show_preferences(self):
         prefs = Preferences(self.client)

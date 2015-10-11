@@ -6,7 +6,7 @@ from plugin_manager.plugins.hal.combat import Combat
 
 class Plugin:
     def __init__(self):
-        print("AutoCombat: init")
+        print("Hal: init")
         self.in_combat = False
         self.free = True
         self.action = Action.nothing
@@ -15,9 +15,17 @@ class Plugin:
                              self.action)
         self.combat_enabled = tk.BooleanVar()
 
-    def process(self, line, send_command):
+    def set_send_command(self, send_command):
+        self.send_command = send_command
+        self.combat.set_send_command(send_command)
+
+    def set_echo(self, echo):
+        self.echo = echo
+        self.combat.set_echo(echo)
+
+    def post_process(self, line):
         if self.in_combat and self.combat_enabled.get():
-            self.combat.handle_combat_line(line, send_command)
+            self.combat.handle_combat_line(line)
         elif "You are no longer busy" in line:
             self.free = True
             # self.perform_action()

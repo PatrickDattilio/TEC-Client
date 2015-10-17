@@ -3,14 +3,16 @@ from socket import socket
 from queue import Queue
 from time import sleep
 from threading import Thread
-from .clientui import ClientUI
 from configparser import ConfigParser
-from plugin_manager.plugin_manager import PluginManager
 import logging
 import time
-import requests
 import re
+
 import hashlib
+
+import requests
+
+from .clientui import ClientUI
 
 __author__ = 'ToothlessRebel'
 
@@ -26,8 +28,7 @@ class Client:
         self.config = ConfigParser()
         if self.config.read('config.ini').__len__() < 1:
             raise EnvironmentError
-        self.plugin_manager = PluginManager()
-        self.ui = ClientUI(master, self, self.queue, self.send, self.plugin_manager)
+        self.ui = ClientUI(master, self, self.queue, self.send)
         self.socket = socket()
         self.listener = None
         self.session_log_name = time.strftime("%d.%m.%Y-%H.%M.%S.txt")
@@ -75,7 +76,8 @@ class Client:
     def listen(self):
         socket.connect(self.socket, ("tec.skotos.net", 6730))
         self.login_user()
-        self.send("SKOTOS Zealous 0.7.12.2\n")
+        if self.connect:
+            self.send("SKOTOS Zealous 0.7.12.2\n")
         while self.connect:
             buffer = ""
             sleep(0)
@@ -108,31 +110,33 @@ class Client:
     def login_user(self):
         self.ui.interrupt_input = True
         self.ui.draw_output('\nPlease enter your user name:')
-        while self.ui.interrupt_buffer.__len__() < 1:
+        while self.ui.interrupt_buffer.__len__() < 1 and self.connect:
             sleep(0.5)
-        self.ui.draw_output('\nPlease enter your password:')
-        while self.ui.interrupt_buffer.__len__() < 2:
+        if self.connect:
+            self.ui.draw_output('\nPlease enter your password:')
+        while self.ui.interrupt_buffer.__len__() < 2 and self.connect:
             sleep(0.5)
-        self.ui.draw_output('\nSigning in...')
+        if self.connect:  # If the client has stopped during the pause, don't try and send commands.
+            self.ui.draw_output('\nSigning in...')
 
-        # Attempt to Zealotry log in.
-        header = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/42.0.2311.90 Safari/537.36',
-            'Cookie': 'biscuit=test'
-        }
-        data = {
-            'uname': self.ui.interrupt_buffer.popleft(),
-            'pwd': self.ui.interrupt_buffer.popleft(),
-            'phrase': '',
-            'submit': 'true'
-        }
-        url = 'https://www.skotos.net/user/login.php'
-        response = requests.post(url, headers=header, data=data, allow_redirects=False)
-        try:
-            self.uname = re.search('user=(.*?);', response.headers['set-cookie']).group(1)
-            self.pwd = re.search('pass=(.*?);', response.headers['set-cookie']).group(1)
-        except KeyError:
-            self.ui.draw_output('\nIncorrect credentials, please re-enter.')
-            self.login_user()
-        self.ui.interrupt_input = False
+            # Attempt to Zealotry log in.
+            header = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/42.0.2311.90 Safari/537.36',
+                'Cookie': 'biscuit=test'
+            }
+            data = {
+                'uname': self.ui.interrupt_buffer.popleft(),
+                'pwd': self.ui.interrupt_buffer.popleft(),
+                'phrase': '',
+                'submit': 'true'
+            }
+            url = 'https://www.skotos.net/user/login.php'
+            response = requests.post(url, headers=header, data=data, allow_redirects=False, verify=False)
+            try:
+                self.uname = re.search('user=(.*?);', response.headers['set-cookie']).group(1)
+                self.pwd = re.search('pass=(.*?);', response.headers['set-cookie']).group(1)
+            except KeyError:
+                self.ui.draw_output('\nIncorrect credentials, please re-enter.')
+                self.login_user()
+            self.ui.interrupt_input = False

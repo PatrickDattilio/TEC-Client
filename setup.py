@@ -8,17 +8,16 @@ __author__ = 'ToothlessRebel'
 build_exe_options = {
     "include_files": [
         ('resources', 'resources'),
-        ('config.ini', 'config.ini')
+        ('config.ini', 'config.ini'),
+        'plugins'
     ]
 }
 
 base = None
-# if sys.platform == "win32":
-#     base = "Win32GUI"
 
 setup(
     name="Centurion Client",
-    version="0.5.2-alpha",
+    version="0.6-alpha",
     description="TEC Client in Python",
     options={
         "build_exe": build_exe_options
@@ -29,7 +28,7 @@ setup(
         Executable(
             "main.py",
             base=base,
-            icon=resource_filename('resources.images', 'eternal_logo.ico'),
+            icon=resource_filename('resources.images', 'centurion.ico'),
             targetName="Centurion Client.exe",
             packages=find_packages()
         )

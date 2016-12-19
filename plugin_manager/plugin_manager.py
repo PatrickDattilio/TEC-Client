@@ -49,7 +49,7 @@ class PluginManager():
             for name in files:
                 if name.endswith(".py"):
                     name = name.strip(".py")
-                    if "test" not in name:
+                    if "test" not in name and "__init__" not in name:
                         try:
                             mod = __import__(name)
                             if hasattr(mod, "Plugin"):

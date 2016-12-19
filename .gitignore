@@ -62,3 +62,6 @@ target/
 # Project Files
 crash_log.txt
 myconfig.ini
+
+#Non-Default Plugins
+plugins/*

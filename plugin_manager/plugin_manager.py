@@ -4,21 +4,27 @@ import os
 import sys
 import traceback
 from os.path import join, dirname, realpath
-
+from appdirs import AppDirs
 
 __author__ = 'pat'
 
 
-class PluginManager():
+class PluginManager:
     top_level = dirname(realpath(dirname(__file__)))
     if "zip" in top_level:
         top_level = realpath(dirname(top_level))
     path = join(top_level, 'plugins')
-    config = "plugin_config.json"
+    try:
+        if sys.frozen is True:
+            dirs = AppDirs('Centurion Client', 'Exposure Software')
+            config = dirs.user_config_dir + "\\plugin_config.json"
+        else:
+            config = join(path, 'plugin_config.json')
+    except AttributeError:
+        config = join(path, 'plugin_config.json')
 
     def __init__(self, send_command, echo):
         self.log = logging.getLogger(__name__)
-        self.log.setLevel(logging.DEBUG)
         self.send_command = send_command
         self.echo = echo
 
@@ -31,7 +37,7 @@ class PluginManager():
         self.post_process_plugins = []
         self.ui_plugins = []
         self.create_status_api()
-        data = open(join(self.path, self.config), 'r').read()
+        data = open(self.config, 'r').read()
         if data:
             self.plugin_enabled = json.loads(data)
 
@@ -40,7 +46,6 @@ class PluginManager():
                 if "__" not in d and "test" not in d and "pyglet" not in d:
                     self.find_plugins(join(self.path, d))
         self.save_plugin_config()
-
 
     def find_plugins(self, current_path):
         sys.path.insert(0, current_path)
@@ -85,7 +90,7 @@ class PluginManager():
         return self.plugins
 
     def save_plugin_config(self):
-        config = open(join(self.path, self.config), 'w')
+        config = open(self.config, 'w')
         try:
             config.write(json.dumps(self.plugin_enabled, indent=4, sort_keys=True))
         finally:

@@ -47,18 +47,17 @@ class PluginManager():
         for root, dirs, files in os.walk(current_path, topdown=True):
             dirs[:] = [dir for dir in dirs if "__" not in dir and "test" not in dir and "pyglet" not in dir]
             for name in files:
-                if name.endswith(".py"):
+                if name.endswith("_plugin.py"):
                     name = name.strip(".py")
-                    if "test" not in name and "__init__" not in name:
-                        try:
-                            mod = __import__(name)
-                            if hasattr(mod, "Plugin"):
-                                self.plugins[name] = mod.Plugin()
-                                if name not in self.plugin_enabled:
-                                    self.plugin_enabled[name] = True
-                                self.register_apis(name, self.plugins[name])
-                        except Exception as e:
-                            self.log.error(traceback.format_exc())
+                    try:
+                        mod = __import__(name)
+                        if hasattr(mod, "Plugin"):
+                            self.plugins[name] = mod.Plugin()
+                            if name not in self.plugin_enabled:
+                                self.plugin_enabled[name] = True
+                            self.register_apis(name, self.plugins[name])
+                    except Exception as e:
+                        self.log.error(traceback.format_exc())
         sys.path.pop(0)
 
     def register_apis(self, name, mod):
